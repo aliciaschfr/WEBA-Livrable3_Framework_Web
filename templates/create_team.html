@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer une écurie de F1</title>
+    <style>
+        body {
+            background-color: pink;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .back-arrow {
+            position: fixed;
+            top: 20px;
+            left: 40px;
+            width: 70px;
+            height: 70px;
+            background-image: url('/static/fleche.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            z-index: 999;
+            cursor: pointer;
+        }
+        form {
+            width: 400px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button[type="submit"] {
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button[type="submit"]:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <a class="back-arrow" href="javascript:history.go(-1);"></a>
+    <form action="{{ url_for('create_team') }}" method="post">
+        <h1>Créer une écurie de F1</h1>
+
+        <label for="team_name">Écurie:</label>
+        <select id="team_name" name="team_name" required>
+            {% for name in names %}
+                <option value="{{ name }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+
+
+        <label for="driver1">Pilote 1:</label>
+        <select id="driver1" name="driver1" required>
+            {% for driver in drivers %}
+            <option value="{{ driver }}">{{ driver }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="driver2">Pilote 2:</label>
+        <select id="driver2" name="driver2" required>
+            {% for driver in drivers %}
+            <option value="{{ driver }}">{{ driver }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="circuit">Circuit:</label>
+        <select id="circuit" name="circuit" required>
+            {% for circuit in circuits %}
+            <option value="{{ circuit }}">{{ circuit }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Créer</button>
+    </form>
+</body>
+</html>

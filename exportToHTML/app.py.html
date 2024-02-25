@@ -1,0 +1,298 @@
+<html>
+<head>
+<title>app.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7a7e85;}
+.s1 { color: #bcbec4;}
+.s2 { color: #cf8e6d;}
+.s3 { color: #bcbec4;}
+.s4 { color: #6aab73;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+app.py</font>
+</center></td></tr></table>
+<pre><span class="s0">#app.py</span>
+<span class="s2">from </span><span class="s1">models </span><span class="s2">import </span><span class="s1">Model</span><span class="s3">, </span><span class="s1">User</span>
+<span class="s2">from </span><span class="s1">datetime </span><span class="s2">import </span><span class="s1">datetime</span>
+<span class="s2">from </span><span class="s1">flask </span><span class="s2">import </span><span class="s1">Flask</span><span class="s3">, </span><span class="s1">render_template</span><span class="s3">, </span><span class="s1">session</span><span class="s3">, </span><span class="s1">flash</span><span class="s3">, </span><span class="s1">redirect</span><span class="s3">, </span><span class="s1">url_for</span><span class="s3">, </span><span class="s1">request</span><span class="s3">, </span><span class="s1">jsonify</span>
+<span class="s2">import </span><span class="s1">requests</span>
+<span class="s2">from </span><span class="s1">models </span><span class="s2">import </span><span class="s1">F1Team</span><span class="s3">, </span><span class="s1">db</span>
+<span class="s2">from </span><span class="s1">operator </span><span class="s2">import </span><span class="s1">itemgetter</span>
+
+<span class="s1">app </span><span class="s3">= </span><span class="s1">Flask</span><span class="s3">(</span><span class="s1">__name__</span><span class="s3">)</span>
+<span class="s1">app</span><span class="s3">.</span><span class="s1">secret_key </span><span class="s3">= </span><span class="s4">'secret_key'</span>
+<span class="s1">app</span><span class="s3">.</span><span class="s1">config</span><span class="s3">[</span><span class="s4">'SQLALCHEMY_DATABASE_URI'</span><span class="s3">] = </span><span class="s4">'sqlite:///database.db'</span>
+<span class="s1">app</span><span class="s3">.</span><span class="s1">config</span><span class="s3">[</span><span class="s4">'SQLALCHEMY_TRACK_MODIFICATIONS'</span><span class="s3">] = </span><span class="s2">False</span>
+
+
+<span class="s1">db</span><span class="s3">.</span><span class="s1">init_app</span><span class="s3">(</span><span class="s1">app</span><span class="s3">)</span>
+<span class="s2">with </span><span class="s1">app</span><span class="s3">.</span><span class="s1">app_context</span><span class="s3">():</span>
+    <span class="s1">db</span><span class="s3">.</span><span class="s1">create_all</span><span class="s3">()</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/'</span><span class="s3">)</span>
+<span class="s2">def </span><span class="s1">home</span><span class="s3">():</span>
+    <span class="s1">logged_in </span><span class="s3">= </span><span class="s4">'username' </span><span class="s2">in </span><span class="s1">session</span>
+    <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'index.html'</span><span class="s3">, </span><span class="s1">logged_in</span><span class="s3">=</span><span class="s1">logged_in</span><span class="s3">)</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/drivers'</span><span class="s3">)</span>
+<span class="s2">def </span><span class="s1">index</span><span class="s3">():</span>
+    <span class="s1">response </span><span class="s3">= </span><span class="s1">requests</span><span class="s3">.</span><span class="s1">get</span><span class="s3">(</span><span class="s4">'https://api.openf1.org/v1/drivers'</span><span class="s3">)</span>
+    <span class="s2">if </span><span class="s1">response</span><span class="s3">.</span><span class="s1">status_code </span><span class="s3">== </span><span class="s5">200</span><span class="s3">:</span>
+        <span class="s1">drivers_data </span><span class="s3">= </span><span class="s1">response</span><span class="s3">.</span><span class="s1">json</span><span class="s3">()</span>
+
+        <span class="s1">unique_drivers_dict </span><span class="s3">= {}</span>
+
+        <span class="s2">for </span><span class="s1">driver </span><span class="s2">in </span><span class="s1">drivers_data</span><span class="s3">:</span>
+            <span class="s1">full_name </span><span class="s3">= </span><span class="s1">driver</span><span class="s3">[</span><span class="s4">'full_name'</span><span class="s3">]</span>
+            <span class="s2">if </span><span class="s1">full_name </span><span class="s2">not in </span><span class="s1">unique_drivers_dict</span><span class="s3">:</span>
+                <span class="s1">unique_drivers_dict</span><span class="s3">[</span><span class="s1">full_name</span><span class="s3">] = </span><span class="s1">driver</span>
+
+        <span class="s1">unique_drivers_list </span><span class="s3">= </span><span class="s1">list</span><span class="s3">(</span><span class="s1">unique_drivers_dict</span><span class="s3">.</span><span class="s1">values</span><span class="s3">())</span>
+
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'drivers.html'</span><span class="s3">, </span><span class="s1">pilotes</span><span class="s3">=</span><span class="s1">unique_drivers_list</span><span class="s3">)</span>
+    <span class="s2">else</span><span class="s3">:</span>
+        <span class="s1">print</span><span class="s3">(</span><span class="s4">&quot;Failed to retrieve driver data&quot;</span><span class="s3">)</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/drivers'</span><span class="s3">)</span>
+<span class="s2">def </span><span class="s1">drivers</span><span class="s3">():</span>
+    <span class="s1">response </span><span class="s3">= </span><span class="s1">requests</span><span class="s3">.</span><span class="s1">get</span><span class="s3">(</span><span class="s4">'https://api.openf1.org/v1/drivers'</span><span class="s3">)</span>
+
+    <span class="s2">if </span><span class="s1">response</span><span class="s3">.</span><span class="s1">status_code </span><span class="s3">== </span><span class="s5">200</span><span class="s3">:</span>
+        <span class="s1">pilotes </span><span class="s3">= </span><span class="s1">response</span><span class="s3">.</span><span class="s1">json</span><span class="s3">()</span>
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'drivers.html'</span><span class="s3">, </span><span class="s1">pilotes</span><span class="s3">=</span><span class="s1">pilotes</span><span class="s3">)  </span><span class="s0"># Utilisation de &quot;pilotes&quot; comme nom de variable</span>
+    <span class="s2">else</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s1">jsonify</span><span class="s3">({</span><span class="s4">&quot;error&quot;</span><span class="s3">: </span><span class="s4">&quot;Failed to retrieve driver data&quot;</span><span class="s3">}), </span><span class="s5">500</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/liste_ecurie'</span><span class="s3">)</span>
+<span class="s2">def </span><span class="s1">liste_ecurie</span><span class="s3">():</span>
+    <span class="s2">if </span><span class="s4">'username' </span><span class="s2">not in </span><span class="s1">session</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'register'</span><span class="s3">))</span>
+
+    <span class="s1">user </span><span class="s3">= </span><span class="s1">User</span><span class="s3">.</span><span class="s1">query</span><span class="s3">.</span><span class="s1">filter_by</span><span class="s3">(</span><span class="s1">username</span><span class="s3">=</span><span class="s1">session</span><span class="s3">[</span><span class="s4">'username'</span><span class="s3">]).</span><span class="s1">first</span><span class="s3">()</span>
+    <span class="s1">teams </span><span class="s3">= </span><span class="s1">user</span><span class="s3">.</span><span class="s1">teams</span>
+
+    <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'liste_ecurie.html'</span><span class="s3">, </span><span class="s1">teams</span><span class="s3">=</span><span class="s1">teams</span><span class="s3">)</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/create_team'</span><span class="s3">, </span><span class="s1">methods</span><span class="s3">=[</span><span class="s4">'GET'</span><span class="s3">, </span><span class="s4">'POST'</span><span class="s3">])</span>
+<span class="s2">def </span><span class="s1">create_team</span><span class="s3">():</span>
+    <span class="s2">if </span><span class="s4">'username' </span><span class="s2">not in </span><span class="s1">session</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'register'</span><span class="s3">))</span>
+
+    <span class="s2">if </span><span class="s1">request</span><span class="s3">.</span><span class="s1">method </span><span class="s3">== </span><span class="s4">'POST'</span><span class="s3">:</span>
+        <span class="s1">team_name </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'team_name'</span><span class="s3">]</span>
+        <span class="s1">driver1 </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'driver1'</span><span class="s3">]</span>
+        <span class="s1">driver2 </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'driver2'</span><span class="s3">]</span>
+        <span class="s1">circuit </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'circuit'</span><span class="s3">]</span>
+
+        <span class="s1">new_team </span><span class="s3">= </span><span class="s1">F1Team</span><span class="s3">(</span><span class="s1">team_name</span><span class="s3">=</span><span class="s1">team_name</span><span class="s3">, </span><span class="s1">driver1</span><span class="s3">=</span><span class="s1">driver1</span><span class="s3">, </span><span class="s1">driver2</span><span class="s3">=</span><span class="s1">driver2</span><span class="s3">, </span><span class="s1">circuit</span><span class="s3">=</span><span class="s1">circuit</span><span class="s3">)</span>
+        <span class="s1">db</span><span class="s3">.</span><span class="s1">session</span><span class="s3">.</span><span class="s1">add</span><span class="s3">(</span><span class="s1">new_team</span><span class="s3">)</span>
+        <span class="s1">db</span><span class="s3">.</span><span class="s1">session</span><span class="s3">.</span><span class="s1">commit</span><span class="s3">()</span>
+
+        <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'liste_ecurie'</span><span class="s3">))</span>
+    <span class="s2">else</span><span class="s3">:</span>
+        <span class="s1">names </span><span class="s3">= </span><span class="s1">Model</span><span class="s3">.</span><span class="s1">get_available_teams</span><span class="s3">()</span>
+        <span class="s1">drivers </span><span class="s3">= </span><span class="s1">Model</span><span class="s3">.</span><span class="s1">get_available_drivers</span><span class="s3">()</span>
+        <span class="s1">circuits </span><span class="s3">= </span><span class="s1">Model</span><span class="s3">.</span><span class="s1">get_available_circuits</span><span class="s3">()</span>
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'create_team.html'</span><span class="s3">, </span><span class="s1">names</span><span class="s3">=</span><span class="s1">names</span><span class="s3">, </span><span class="s1">drivers</span><span class="s3">=</span><span class="s1">drivers</span><span class="s3">, </span><span class="s1">circuits</span><span class="s3">=</span><span class="s1">circuits</span><span class="s3">)</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/edit_team/&lt;int:team_id&gt;'</span><span class="s3">, </span><span class="s1">methods</span><span class="s3">=[</span><span class="s4">'GET'</span><span class="s3">, </span><span class="s4">'POST'</span><span class="s3">])</span>
+<span class="s2">def </span><span class="s1">edit_team</span><span class="s3">(</span><span class="s1">team_id</span><span class="s3">):</span>
+
+    <span class="s1">team </span><span class="s3">= </span><span class="s1">F1Team</span><span class="s3">.</span><span class="s1">query</span><span class="s3">.</span><span class="s1">get_or_404</span><span class="s3">(</span><span class="s1">team_id</span><span class="s3">)</span>
+
+    <span class="s2">if </span><span class="s1">request</span><span class="s3">.</span><span class="s1">method </span><span class="s3">== </span><span class="s4">'POST'</span><span class="s3">:</span>
+        <span class="s1">team</span><span class="s3">.</span><span class="s1">team_name </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'team_name'</span><span class="s3">]</span>
+        <span class="s1">team</span><span class="s3">.</span><span class="s1">driver1 </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'driver1'</span><span class="s3">]</span>
+        <span class="s1">team</span><span class="s3">.</span><span class="s1">driver2 </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'driver2'</span><span class="s3">]</span>
+        <span class="s1">team</span><span class="s3">.</span><span class="s1">circuit </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'circuit'</span><span class="s3">]</span>
+
+        <span class="s1">db</span><span class="s3">.</span><span class="s1">session</span><span class="s3">.</span><span class="s1">commit</span><span class="s3">()</span>
+
+        <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'liste_ecurie'</span><span class="s3">))</span>
+    <span class="s2">else</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'edit_team.html'</span><span class="s3">, </span><span class="s1">team</span><span class="s3">=</span><span class="s1">team</span><span class="s3">)</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/delete_team/&lt;int:team_id&gt;'</span><span class="s3">, </span><span class="s1">methods</span><span class="s3">=[</span><span class="s4">'POST'</span><span class="s3">])</span>
+<span class="s2">def </span><span class="s1">delete_team</span><span class="s3">(</span><span class="s1">team_id</span><span class="s3">):</span>
+
+    <span class="s1">team </span><span class="s3">= </span><span class="s1">F1Team</span><span class="s3">.</span><span class="s1">query</span><span class="s3">.</span><span class="s1">get_or_404</span><span class="s3">(</span><span class="s1">team_id</span><span class="s3">)</span>
+    <span class="s1">db</span><span class="s3">.</span><span class="s1">session</span><span class="s3">.</span><span class="s1">delete</span><span class="s3">(</span><span class="s1">team</span><span class="s3">)</span>
+    <span class="s1">db</span><span class="s3">.</span><span class="s1">session</span><span class="s3">.</span><span class="s1">commit</span><span class="s3">()</span>
+    <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'liste_ecurie'</span><span class="s3">))</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/prediction'</span><span class="s3">, </span><span class="s1">methods</span><span class="s3">=[</span><span class="s4">'GET'</span><span class="s3">, </span><span class="s4">'POST'</span><span class="s3">])</span>
+<span class="s2">def </span><span class="s1">prediction</span><span class="s3">():</span>
+    <span class="s2">if </span><span class="s4">'username' </span><span class="s2">not in </span><span class="s1">session</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'register'</span><span class="s3">))</span>
+    <span class="s1">drivers </span><span class="s3">= [</span><span class="s4">&quot;Lewis Hamilton&quot;</span><span class="s3">, </span><span class="s4">&quot;Valtteri Bottas&quot;</span><span class="s3">, </span><span class="s4">&quot;Max Verstappen&quot;</span><span class="s3">, </span><span class="s4">&quot;Sergio Perez&quot;</span><span class="s3">]</span>
+    <span class="s1">teams </span><span class="s3">= [</span><span class="s4">&quot;Mercedes&quot;</span><span class="s3">, </span><span class="s4">&quot;Red Bull Racing&quot;</span><span class="s3">, </span><span class="s4">&quot;McLaren&quot;</span><span class="s3">, </span><span class="s4">&quot;Ferrari&quot;</span><span class="s3">]</span>
+    <span class="s1">circuits </span><span class="s3">= [</span><span class="s4">&quot;Circuit de Barcelone-Catalogne&quot;</span><span class="s3">, </span><span class="s4">&quot;Circuit de Monaco&quot;</span><span class="s3">, </span><span class="s4">&quot;Circuit Paul Ricard&quot;</span><span class="s3">, </span><span class="s4">&quot;Red Bull Ring&quot;</span><span class="s3">]</span>
+
+    <span class="s2">if </span><span class="s1">request</span><span class="s3">.</span><span class="s1">method </span><span class="s3">== </span><span class="s4">'POST'</span><span class="s3">:</span>
+        <span class="s1">driver1 </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'driver1'</span><span class="s3">]</span>
+        <span class="s1">driver2 </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'driver2'</span><span class="s3">]</span>
+        <span class="s1">circuit </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'circuit'</span><span class="s3">]</span>
+        <span class="s1">winner </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'winner'</span><span class="s3">]</span>
+        <span class="s1">pole_position </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'pole_position'</span><span class="s3">]</span>
+        <span class="s1">best_lap </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'best_lap'</span><span class="s3">]</span>
+        <span class="s1">laps_led </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'laps_led'</span><span class="s3">]</span>
+        <span class="s1">pit_stops </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'pit_stops'</span><span class="s3">]</span>
+        <span class="s1">winning_team </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'winning_team'</span><span class="s3">]</span>
+        <span class="s1">weather </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'weather'</span><span class="s3">]</span>
+        <span class="s1">final_rankings </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'final_rankings'</span><span class="s3">]</span>
+
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'prediction.html'</span><span class="s3">, </span><span class="s1">prediction</span><span class="s3">={</span>
+            <span class="s4">'driver1'</span><span class="s3">: </span><span class="s1">driver1</span><span class="s3">,</span>
+            <span class="s4">'driver2'</span><span class="s3">: </span><span class="s1">driver2</span><span class="s3">,</span>
+            <span class="s4">'circuit'</span><span class="s3">: </span><span class="s1">circuit</span><span class="s3">,</span>
+            <span class="s4">'winner'</span><span class="s3">: </span><span class="s1">winner</span><span class="s3">,</span>
+            <span class="s4">'pole_position'</span><span class="s3">: </span><span class="s1">pole_position</span><span class="s3">,</span>
+            <span class="s4">'best_lap'</span><span class="s3">: </span><span class="s1">best_lap</span><span class="s3">,</span>
+            <span class="s4">'laps_led'</span><span class="s3">: </span><span class="s1">laps_led</span><span class="s3">,</span>
+            <span class="s4">'pit_stops'</span><span class="s3">: </span><span class="s1">pit_stops</span><span class="s3">,</span>
+            <span class="s4">'winning_team'</span><span class="s3">: </span><span class="s1">winning_team</span><span class="s3">,</span>
+            <span class="s4">'weather'</span><span class="s3">: </span><span class="s1">weather</span><span class="s3">,</span>
+            <span class="s4">'final_rankings'</span><span class="s3">: </span><span class="s1">final_rankings</span>
+        <span class="s3">}, </span><span class="s1">drivers</span><span class="s3">=</span><span class="s1">drivers</span><span class="s3">, </span><span class="s1">teams</span><span class="s3">=</span><span class="s1">teams</span><span class="s3">, </span><span class="s1">circuits</span><span class="s3">=</span><span class="s1">circuits</span><span class="s3">)</span>
+
+    <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'prediction.html'</span><span class="s3">, </span><span class="s1">drivers</span><span class="s3">=</span><span class="s1">drivers</span><span class="s3">, </span><span class="s1">teams</span><span class="s3">=</span><span class="s1">teams</span><span class="s3">, </span><span class="s1">circuits</span><span class="s3">=</span><span class="s1">circuits</span><span class="s3">)</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/circuits'</span><span class="s3">)</span>
+<span class="s2">def </span><span class="s1">circuits</span><span class="s3">():</span>
+    <span class="s1">response </span><span class="s3">= </span><span class="s1">requests</span><span class="s3">.</span><span class="s1">get</span><span class="s3">(</span><span class="s4">'https://api.openf1.org/v1/meetings'</span><span class="s3">)</span>
+
+    <span class="s2">if </span><span class="s1">response</span><span class="s3">.</span><span class="s1">status_code </span><span class="s3">== </span><span class="s5">200</span><span class="s3">:</span>
+        <span class="s1">meetings_data </span><span class="s3">= </span><span class="s1">response</span><span class="s3">.</span><span class="s1">json</span><span class="s3">()</span>
+
+        <span class="s1">circuits_info </span><span class="s3">= []</span>
+
+        <span class="s2">for </span><span class="s1">meeting </span><span class="s2">in </span><span class="s1">meetings_data</span><span class="s3">:</span>
+            <span class="s1">circuit_name </span><span class="s3">= </span><span class="s1">meeting</span><span class="s3">[</span><span class="s4">'circuit_short_name'</span><span class="s3">]</span>
+            <span class="s1">country_name </span><span class="s3">= </span><span class="s1">meeting</span><span class="s3">[</span><span class="s4">'country_name'</span><span class="s3">]</span>
+            <span class="s1">location </span><span class="s3">= </span><span class="s1">meeting</span><span class="s3">[</span><span class="s4">'location'</span><span class="s3">]</span>
+            <span class="s1">image_filename </span><span class="s3">= </span><span class="s1">circuit_name</span><span class="s3">.</span><span class="s1">replace</span><span class="s3">(</span><span class="s4">&quot; &quot;</span><span class="s3">, </span><span class="s4">&quot;_&quot;</span><span class="s3">) + </span><span class="s4">&quot;.png&quot;</span>
+            <span class="s1">image_url </span><span class="s3">= </span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'static'</span><span class="s3">, </span><span class="s1">filename</span><span class="s3">=</span><span class="s4">'circuits/' </span><span class="s3">+ </span><span class="s1">image_filename</span><span class="s3">)</span>
+
+            <span class="s1">circuits_info</span><span class="s3">.</span><span class="s1">append</span><span class="s3">({</span>
+                <span class="s4">'name'</span><span class="s3">: </span><span class="s1">circuit_name</span><span class="s3">,</span>
+                <span class="s4">'country'</span><span class="s3">: </span><span class="s1">country_name</span><span class="s3">,</span>
+                <span class="s4">'location'</span><span class="s3">: </span><span class="s1">location</span><span class="s3">,</span>
+                <span class="s4">'image_url'</span><span class="s3">: </span><span class="s1">image_url</span>
+            <span class="s3">})</span>
+
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'circuits.html'</span><span class="s3">, </span><span class="s1">circuits</span><span class="s3">=</span><span class="s1">circuits_info</span><span class="s3">)</span>
+    <span class="s2">else</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s4">'Failed to retrieve circuit data'</span><span class="s3">, </span><span class="s5">500</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/derniers_resultats'</span><span class="s3">)</span>
+<span class="s2">def </span><span class="s1">derniers_resultats</span><span class="s3">():</span>
+    <span class="s1">response_drivers </span><span class="s3">= </span><span class="s1">requests</span><span class="s3">.</span><span class="s1">get</span><span class="s3">(</span><span class="s4">'https://api.openf1.org/v1/drivers'</span><span class="s3">)</span>
+    <span class="s1">response_sessions </span><span class="s3">= </span><span class="s1">requests</span><span class="s3">.</span><span class="s1">get</span><span class="s3">(</span><span class="s4">'https://api.openf1.org/v1/sessions'</span><span class="s3">)</span>
+    <span class="s1">response_positions </span><span class="s3">= </span><span class="s1">requests</span><span class="s3">.</span><span class="s1">get</span><span class="s3">(</span><span class="s4">'https://api.openf1.org/v1/position'</span><span class="s3">)</span>
+
+    <span class="s2">if </span><span class="s1">all</span><span class="s3">(</span><span class="s1">response</span><span class="s3">.</span><span class="s1">status_code </span><span class="s3">== </span><span class="s5">200 </span><span class="s2">for </span><span class="s1">response </span><span class="s2">in </span><span class="s3">[</span><span class="s1">response_drivers</span><span class="s3">, </span><span class="s1">response_sessions</span><span class="s3">, </span><span class="s1">response_positions</span><span class="s3">]):</span>
+        <span class="s1">drivers_data </span><span class="s3">= </span><span class="s1">response_drivers</span><span class="s3">.</span><span class="s1">json</span><span class="s3">()</span>
+        <span class="s1">sessions_data </span><span class="s3">= </span><span class="s1">response_sessions</span><span class="s3">.</span><span class="s1">json</span><span class="s3">()</span>
+        <span class="s1">positions_data </span><span class="s3">= </span><span class="s1">response_positions</span><span class="s3">.</span><span class="s1">json</span><span class="s3">()</span>
+
+        <span class="s1">resultats </span><span class="s3">= {}</span>
+
+        <span class="s2">for </span><span class="s1">position </span><span class="s2">in </span><span class="s1">positions_data</span><span class="s3">:</span>
+            <span class="s1">session_key </span><span class="s3">= </span><span class="s1">position</span><span class="s3">[</span><span class="s4">'session_key'</span><span class="s3">]</span>
+            <span class="s1">session </span><span class="s3">= </span><span class="s1">next</span><span class="s3">(</span>
+                <span class="s3">(</span><span class="s1">s </span><span class="s2">for </span><span class="s1">s </span><span class="s2">in </span><span class="s1">sessions_data </span><span class="s2">if </span><span class="s1">s</span><span class="s3">[</span><span class="s4">'session_key'</span><span class="s3">] == </span><span class="s1">session_key </span><span class="s2">and </span><span class="s1">s</span><span class="s3">[</span><span class="s4">'session_type'</span><span class="s3">] == </span><span class="s4">'Race'</span><span class="s3">), </span><span class="s2">None</span><span class="s3">)</span>
+            <span class="s2">if </span><span class="s1">session</span><span class="s3">:</span>
+                <span class="s1">position_date </span><span class="s3">= </span><span class="s1">datetime</span><span class="s3">.</span><span class="s1">fromisoformat</span><span class="s3">(</span><span class="s1">position</span><span class="s3">[</span><span class="s4">'date'</span><span class="s3">])</span>
+                <span class="s1">date_key </span><span class="s3">= </span><span class="s1">position_date</span><span class="s3">.</span><span class="s1">strftime</span><span class="s3">(</span><span class="s4">'%Y-%m-%d'</span><span class="s3">)</span>
+
+                <span class="s2">if </span><span class="s1">date_key </span><span class="s2">not in </span><span class="s1">resultats</span><span class="s3">:</span>
+                    <span class="s1">resultats</span><span class="s3">[</span><span class="s1">date_key</span><span class="s3">] = {</span><span class="s4">'races'</span><span class="s3">: []}</span>
+
+                <span class="s2">if </span><span class="s1">position</span><span class="s3">[</span><span class="s4">'position'</span><span class="s3">] </span><span class="s2">in </span><span class="s3">[</span><span class="s5">1</span><span class="s3">, </span><span class="s5">2</span><span class="s3">, </span><span class="s5">3</span><span class="s3">]:</span>
+                    <span class="s1">driver_number </span><span class="s3">= </span><span class="s1">position</span><span class="s3">[</span><span class="s4">'driver_number'</span><span class="s3">]</span>
+                    <span class="s1">driver </span><span class="s3">= </span><span class="s1">next</span><span class="s3">((</span><span class="s1">d </span><span class="s2">for </span><span class="s1">d </span><span class="s2">in </span><span class="s1">drivers_data </span><span class="s2">if </span><span class="s1">d</span><span class="s3">[</span><span class="s4">'driver_number'</span><span class="s3">] == </span><span class="s1">driver_number</span><span class="s3">), </span><span class="s2">None</span><span class="s3">)</span>
+                    <span class="s2">if </span><span class="s1">driver</span><span class="s3">:</span>
+                        <span class="s1">resultats</span><span class="s3">[</span><span class="s1">date_key</span><span class="s3">][</span><span class="s4">'races'</span><span class="s3">].</span><span class="s1">append</span><span class="s3">({</span>
+                            <span class="s4">'date'</span><span class="s3">: </span><span class="s1">position_date</span><span class="s3">,</span>
+                            <span class="s4">'location'</span><span class="s3">: </span><span class="s1">session</span><span class="s3">[</span><span class="s4">'location'</span><span class="s3">],</span>
+                            <span class="s4">'driver_name'</span><span class="s3">: </span><span class="s1">driver</span><span class="s3">[</span><span class="s4">'full_name'</span><span class="s3">],</span>
+                            <span class="s4">'position'</span><span class="s3">: </span><span class="s1">position</span><span class="s3">[</span><span class="s4">'position'</span><span class="s3">]</span>
+                        <span class="s3">})</span>
+
+        <span class="s2">for </span><span class="s1">date_data </span><span class="s2">in </span><span class="s1">resultats</span><span class="s3">.</span><span class="s1">values</span><span class="s3">():</span>
+            <span class="s1">races </span><span class="s3">= </span><span class="s1">date_data</span><span class="s3">.</span><span class="s1">get</span><span class="s3">(</span><span class="s4">'races'</span><span class="s3">, [])</span>
+            <span class="s2">if </span><span class="s1">races</span><span class="s3">:</span>
+                <span class="s1">latest_race </span><span class="s3">= </span><span class="s1">max</span><span class="s3">(</span><span class="s1">races</span><span class="s3">, </span><span class="s1">key</span><span class="s3">=</span><span class="s1">itemgetter</span><span class="s3">(</span><span class="s4">'date'</span><span class="s3">))</span>
+                <span class="s1">date_data</span><span class="s3">[</span><span class="s4">'races'</span><span class="s3">] = [</span><span class="s1">latest_race</span><span class="s3">]</span>
+
+        <span class="s1">final_resultats </span><span class="s3">= [</span><span class="s1">race </span><span class="s2">for </span><span class="s1">date_data </span><span class="s2">in </span><span class="s1">resultats</span><span class="s3">.</span><span class="s1">values</span><span class="s3">() </span><span class="s2">for </span><span class="s1">race </span><span class="s2">in </span><span class="s1">date_data</span><span class="s3">[</span><span class="s4">'races'</span><span class="s3">]]</span>
+
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'derniers_resultats.html'</span><span class="s3">, </span><span class="s1">resultats</span><span class="s3">=</span><span class="s1">final_resultats</span><span class="s3">)</span>
+    <span class="s2">else</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s4">'Failed to retrieve race results'</span><span class="s3">, </span><span class="s5">500</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/register'</span><span class="s3">, </span><span class="s1">methods</span><span class="s3">=[</span><span class="s4">'GET'</span><span class="s3">, </span><span class="s4">'POST'</span><span class="s3">])</span>
+<span class="s2">def </span><span class="s1">register</span><span class="s3">():</span>
+    <span class="s2">if </span><span class="s1">request</span><span class="s3">.</span><span class="s1">method </span><span class="s3">== </span><span class="s4">'POST'</span><span class="s3">:</span>
+        <span class="s1">username </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'username'</span><span class="s3">]</span>
+        <span class="s1">email </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'email'</span><span class="s3">]</span>
+        <span class="s1">password </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'password'</span><span class="s3">]</span>
+
+        <span class="s1">existing_user </span><span class="s3">= </span><span class="s1">User</span><span class="s3">.</span><span class="s1">query</span><span class="s3">.</span><span class="s1">filter_by</span><span class="s3">(</span><span class="s1">username</span><span class="s3">=</span><span class="s1">username</span><span class="s3">).</span><span class="s1">first</span><span class="s3">()</span>
+        <span class="s2">if </span><span class="s1">existing_user</span><span class="s3">:</span>
+            <span class="s1">error_message </span><span class="s3">= </span><span class="s4">'Ce nom d</span><span class="s2">\'</span><span class="s4">utilisateur est déjà pris. Veuillez en choisir un autre.'</span>
+            <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'register.html'</span><span class="s3">, </span><span class="s1">error</span><span class="s3">=</span><span class="s1">error_message</span><span class="s3">)</span>
+
+        <span class="s1">new_user </span><span class="s3">= </span><span class="s1">User</span><span class="s3">(</span><span class="s1">username</span><span class="s3">=</span><span class="s1">username</span><span class="s3">, </span><span class="s1">email</span><span class="s3">=</span><span class="s1">email</span><span class="s3">, </span><span class="s1">password</span><span class="s3">=</span><span class="s1">password</span><span class="s3">)</span>
+        <span class="s1">db</span><span class="s3">.</span><span class="s1">session</span><span class="s3">.</span><span class="s1">add</span><span class="s3">(</span><span class="s1">new_user</span><span class="s3">)</span>
+        <span class="s1">db</span><span class="s3">.</span><span class="s1">session</span><span class="s3">.</span><span class="s1">commit</span><span class="s3">()</span>
+
+        <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'login'</span><span class="s3">))</span>
+    <span class="s2">else</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'register.html'</span><span class="s3">)</span>
+
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/login'</span><span class="s3">, </span><span class="s1">methods</span><span class="s3">=[</span><span class="s4">'GET'</span><span class="s3">, </span><span class="s4">'POST'</span><span class="s3">])</span>
+<span class="s2">def </span><span class="s1">login</span><span class="s3">():</span>
+    <span class="s2">if </span><span class="s1">request</span><span class="s3">.</span><span class="s1">method </span><span class="s3">== </span><span class="s4">'POST'</span><span class="s3">:</span>
+        <span class="s1">username </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'username'</span><span class="s3">]</span>
+        <span class="s1">password </span><span class="s3">= </span><span class="s1">request</span><span class="s3">.</span><span class="s1">form</span><span class="s3">[</span><span class="s4">'password'</span><span class="s3">]</span>
+
+        <span class="s1">user </span><span class="s3">= </span><span class="s1">User</span><span class="s3">.</span><span class="s1">query</span><span class="s3">.</span><span class="s1">filter_by</span><span class="s3">(</span><span class="s1">username</span><span class="s3">=</span><span class="s1">username</span><span class="s3">, </span><span class="s1">password</span><span class="s3">=</span><span class="s1">password</span><span class="s3">).</span><span class="s1">first</span><span class="s3">()</span>
+
+        <span class="s2">if </span><span class="s1">user</span><span class="s3">:</span>
+            <span class="s1">session</span><span class="s3">[</span><span class="s4">'username'</span><span class="s3">] = </span><span class="s1">username</span>
+            <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'home'</span><span class="s3">))</span>
+        <span class="s2">else</span><span class="s3">:</span>
+            <span class="s1">error_message </span><span class="s3">= </span><span class="s4">'Nom d</span><span class="s2">\'</span><span class="s4">utilisateur ou mot de passe incorrect.'</span>
+            <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'login.html'</span><span class="s3">, </span><span class="s1">error</span><span class="s3">=</span><span class="s1">error_message</span><span class="s3">)</span>
+    <span class="s2">else</span><span class="s3">:</span>
+        <span class="s2">return </span><span class="s1">render_template</span><span class="s3">(</span><span class="s4">'login.html'</span><span class="s3">)</span>
+
+<span class="s3">@</span><span class="s1">app</span><span class="s3">.</span><span class="s1">route</span><span class="s3">(</span><span class="s4">'/logout'</span><span class="s3">)</span>
+<span class="s2">def </span><span class="s1">logout</span><span class="s3">():</span>
+    <span class="s1">session</span><span class="s3">.</span><span class="s1">pop</span><span class="s3">(</span><span class="s4">'username'</span><span class="s3">, </span><span class="s2">None</span><span class="s3">)</span>
+    <span class="s2">return </span><span class="s1">redirect</span><span class="s3">(</span><span class="s1">url_for</span><span class="s3">(</span><span class="s4">'home'</span><span class="s3">))</span>
+
+
+<span class="s2">if </span><span class="s1">__name__ </span><span class="s3">== </span><span class="s4">'__main__'</span><span class="s3">:</span>
+    <span class="s1">app</span><span class="s3">.</span><span class="s1">run</span><span class="s3">(</span><span class="s1">debug</span><span class="s3">=</span><span class="s2">True</span><span class="s3">)</span></pre>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>models.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #2aacb8;}
+.s4 { color: #6aab73;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+models.py</font>
+</center></td></tr></table>
+<pre><span class="s0">from </span><span class="s1">flask </span><span class="s0">import </span><span class="s1">Flask</span>
+<span class="s0">from </span><span class="s1">flask_sqlalchemy </span><span class="s0">import </span><span class="s1">SQLAlchemy</span>
+<span class="s0">from </span><span class="s1">flask_migrate </span><span class="s0">import </span><span class="s1">Migrate</span>
+
+<span class="s1">db </span><span class="s2">= </span><span class="s1">SQLAlchemy</span><span class="s2">()</span>
+<span class="s1">app </span><span class="s2">= </span><span class="s1">Flask</span><span class="s2">(</span><span class="s1">__name__</span><span class="s2">)</span>
+<span class="s1">migrate </span><span class="s2">= </span><span class="s1">Migrate</span><span class="s2">(</span><span class="s1">app</span><span class="s2">, </span><span class="s1">db</span><span class="s2">)</span>
+
+<span class="s0">class </span><span class="s1">F1Team</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">Model</span><span class="s2">):</span>
+    <span class="s1">id </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">Integer</span><span class="s2">, </span><span class="s1">primary_key</span><span class="s2">=</span><span class="s0">True</span><span class="s2">)</span>
+    <span class="s1">team_name </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">String</span><span class="s2">(</span><span class="s3">100</span><span class="s2">), </span><span class="s1">nullable</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+    <span class="s1">driver1 </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">String</span><span class="s2">(</span><span class="s3">100</span><span class="s2">), </span><span class="s1">nullable</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+    <span class="s1">driver2 </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">String</span><span class="s2">(</span><span class="s3">100</span><span class="s2">), </span><span class="s1">nullable</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+    <span class="s1">circuit </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">String</span><span class="s2">(</span><span class="s3">100</span><span class="s2">), </span><span class="s1">nullable</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+    <span class="s1">user_id </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">Integer</span><span class="s2">, </span><span class="s1">db</span><span class="s2">.</span><span class="s1">ForeignKey</span><span class="s2">(</span><span class="s4">'user.id'</span><span class="s2">), </span><span class="s1">nullable</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+
+<span class="s0">class </span><span class="s1">User</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">Model</span><span class="s2">):</span>
+    <span class="s1">id </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">Integer</span><span class="s2">, </span><span class="s1">primary_key</span><span class="s2">=</span><span class="s0">True</span><span class="s2">)</span>
+    <span class="s1">username </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">String</span><span class="s2">(</span><span class="s3">100</span><span class="s2">), </span><span class="s1">unique</span><span class="s2">=</span><span class="s0">True</span><span class="s2">, </span><span class="s1">nullable</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+    <span class="s1">email </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">String</span><span class="s2">(</span><span class="s3">100</span><span class="s2">), </span><span class="s1">unique</span><span class="s2">=</span><span class="s0">True</span><span class="s2">, </span><span class="s1">nullable</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+    <span class="s1">password </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">Column</span><span class="s2">(</span><span class="s1">db</span><span class="s2">.</span><span class="s1">String</span><span class="s2">(</span><span class="s3">100</span><span class="s2">), </span><span class="s1">nullable</span><span class="s2">=</span><span class="s0">False</span><span class="s2">)</span>
+    <span class="s1">teams </span><span class="s2">= </span><span class="s1">db</span><span class="s2">.</span><span class="s1">relationship</span><span class="s2">(</span><span class="s4">'F1Team'</span><span class="s2">, </span><span class="s1">backref</span><span class="s2">=</span><span class="s4">'user'</span><span class="s2">, </span><span class="s1">lazy</span><span class="s2">=</span><span class="s0">True</span><span class="s2">)</span>
+<span class="s0">class </span><span class="s1">Model</span><span class="s2">:</span>
+    <span class="s2">@</span><span class="s1">staticmethod</span>
+    <span class="s0">def </span><span class="s1">get_available_drivers</span><span class="s2">():</span>
+        <span class="s0">return </span><span class="s2">[</span>
+            <span class="s4">&quot;Charles Leclerc&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Lewis Hamilton&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Valtteri Bottas&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Max Verstappen&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Sergio Perez&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Daniel Ricciardo&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Lando Norris&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Carlos Sainz&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Sebastian Vettel&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Lance Stroll&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Fernando Alonso&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Esteban Ocon&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Pierre Gasly&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Yuki Tsunoda&quot;</span><span class="s2">,</span>
+        <span class="s2">]</span>
+
+    <span class="s2">@</span><span class="s1">staticmethod</span>
+    <span class="s0">def </span><span class="s1">get_available_circuits</span><span class="s2">():</span>
+        <span class="s0">return </span><span class="s2">[</span>
+            <span class="s4">&quot;Circuit de Monaco&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Circuit de Barcelone-Catalunya&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Circuit Paul Ricard&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Red Bull Ring&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Silverstone Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Hungaroring&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Circuit de Spa-Francorchamps&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Autodromo Nazionale Monza&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Sochi Autodrom&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Circuit de Suzuka&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Circuit of the Americas&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Autódromo José Carlos Pace (Interlagos)&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Yas Marina Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Bahrain International Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Baku City Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Hockenheimring&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Zandvoort Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Algarve International Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Circuit de Catalunya&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Circuit Zolder&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Imola Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Autódromo Hermanos Rodríguez&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Jeddah Street Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Melbourne Grand Prix Circuit&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Adelaide Street Circuit&quot;</span><span class="s2">,</span>
+        <span class="s2">]</span>
+
+    <span class="s2">@</span><span class="s1">staticmethod</span>
+    <span class="s0">def </span><span class="s1">get_available_teams</span><span class="s2">():</span>
+        <span class="s0">return </span><span class="s2">[</span>
+            <span class="s4">&quot;Scuderia Ferrari&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Mercedes-AMG Petronas Formula One Team&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Red Bull Racing&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;McLaren F1 Team&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Alpine F1 Team&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Aston Martin Cognizant Formula One Team&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Scuderia AlphaTauri&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Alfa Romeo Racing ORLEN&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Uralkali Haas F1 Team&quot;</span><span class="s2">,</span>
+            <span class="s4">&quot;Williams Racing&quot;</span>
+        <span class="s2">]</span>
+</pre>
+</body>
+</html>

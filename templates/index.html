@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+        body {
+            background-image: url('/static/fondIndex.png');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+            min-height: 98vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav {
+            background-color: #333;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            }
+
+        #countdown {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('liste_ecurie') }}">Mes écuries de rêve</a>
+        <a href="{{ url_for('create_team') }}">Créer mon écurie</a>
+        <a href="{{ url_for('prediction') }}">Prédire</a>
+        <a href="{{ url_for('derniers_resultats') }}">Dernier résultat</a>
+        <a href="{{ url_for('drivers') }}">Pilotes</a>
+        <a href="{{ url_for('circuits') }}">Circuit</a>
+        {% if logged_in %}
+            <a href="{{ url_for('logout') }}">Déconnexion</a>
+        {% else %}
+            <a href="{{ url_for('register') }}">S'inscrire</a>
+        {% endif %}
+    </nav>
+
+    <!-- Affichage du compte à rebours -->
+    <h2 id="countdown">Prochaine course : GP de Barheïn </h2>
+
+
+    <script>
+        // Définir la date de la prochaine course
+        var nextRaceDate = new Date("March 2, 2024 16:00:00").getTime();
+
+        // Mettre à jour le compte à rebours chaque seconde
+        var x = setInterval(function() {
+
+            // Obtenir la date et l'heure actuelles
+            var now = new Date().getTime();
+
+            // Calculer la différence entre la date de la prochaine course et la date actuelle
+            var distance = nextRaceDate - now;
+
+            // Calculer les jours, heures, minutes et secondes restants
+            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Afficher le compte à rebours dans l'élément avec l'ID "countdown"
+            document.getElementById("countdown").innerHTML = "Prochaine course : GP de Barheïn " + days + "j " + hours + "h " + minutes + "m " + seconds + "s ";
+
+            // Si le compte à rebours est terminé, afficher un message
+            if (distance < 0) {
+                clearInterval(x);
+                document.getElementById("countdown").innerHTML = "La course est en cours !";
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des pilotes de F1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: pink;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 0;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        li {
+            width: 200px;
+            margin: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        img {
+            width: 100px; /* Taille de l'image */
+            height: 100px;
+            border-radius: 50%; /* Coins arrondis pour l'image */
+            margin: 10px auto; /* Centrer l'image horizontalement */
+            display: block; /* Empêcher le débordement d'image */
+        }
+        p {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .team-Mercedes {
+            color: #26cc93; /* Couleur de texte pour Mercedes */
+        }
+        .team-Ferrari {
+            color: red; /* Couleur de texte pour Ferrari */
+        }
+        .team-Red {
+            color: #054394; /* Couleur de texte pour Red Bull Racing */
+        }
+        .team-Williams {
+            color: #61b4e8; /* Couleur de texte pour Williams */
+        }
+        .team-McLaren {
+            color: #FF8700; /* Couleur de texte pour McLaren */
+        }
+        .team-Aston {
+            color: #006F62; /* Couleur de texte pour Aston Martin */
+        }
+        .team-Alpine {
+            color: #0090FF; /* Couleur de texte pour Alpine */
+        }
+        .team-AlphaTauri {
+            color: #45668c; /* Couleur de texte pour AlphaTauri */
+        }
+        .team-Alfa {
+            color: #900000; /* Couleur de texte pour Alfa Romeo */
+        }
+        .team-Haas {
+            color: #333232; /* Couleur de texte pour Haas */
+        }
+        /* Style de la flèche de retour */
+        .back-arrow {
+            position: fixed;
+            top: 05px;
+            left: 40px;
+            width: 70px;
+            height: 70px; /
+            background-image: url('/static/fleche.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            z-index: 999;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<a class="back-arrow" href="javascript:history.go(-1);"></a>
+<h1>Liste des pilotes de F1</h1>
+    <ul>
+        {% for pilote in pilotes %}
+            <li>
+                {% if pilote['headshot_url'] %}
+                    <img src="{{ pilote['headshot_url'] }}" alt="{{ pilote['full_name'] }}">
+                {% else %}
+                    <img src="/static/personne.png" alt="Photo par défaut">
+                {% endif %}
+                <p>{{ pilote['full_name'] }}</p>
+                <p class="team-{{ pilote['team_name'] }}">{{ pilote['team_name'] }}</p>
+                <p>{{ pilote['country_code'] }}</p>
+                <p>{{ pilote['driver_number'] }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

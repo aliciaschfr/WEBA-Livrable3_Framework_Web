@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Prédictions F1</title>
+    <style>
+        body {
+            background-color: #FFC0CB;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        form {
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"] {
+            background-color: #e8065d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #e8065d;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #FFFFFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .prediction-title {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 24px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <form action="{{ url_for('prediction') }}" method="post">
+        <h1>Mes Prédictions F1</h1>
+
+        <label for="driver1">Pilote 1:</label>
+        <select id="driver1" name="driver1" required>
+            {% for driver in drivers %}
+            <option value="{{ driver }}">{{ driver }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="driver2">Pilote 2:</label>
+        <select id="driver2" name="driver2" required>
+            {% for driver in drivers %}
+            <option value="{{ driver }}">{{ driver }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="circuit">Circuit:</label>
+        <select id="circuit" name="circuit" required>
+            {% for circuit in circuits %}
+            <option value="{{ circuit }}">{{ circuit }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="winner">Pilote Gagnant:</label>
+        <select id="winner" name="winner" required>
+            {% for driver in drivers %}
+            <option value="{{ driver }}">{{ driver }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="pole_position">Pole Position:</label>
+        <select id="pole_position" name="pole_position" required>
+            {% for driver in drivers %}
+            <option value="{{ driver }}">{{ driver }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="best_lap">Meilleur Tour en Course:</label>
+        <select id="best_lap" name="best_lap" required>
+            {% for driver in drivers %}
+            <option value="{{ driver }}">{{ driver }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="laps_led">Nombre de Tours en Tête:</label>
+        <input type="number" id="laps_led" name="laps_led" min="0" required>
+
+        <label for="pit_stops">Nombre de Pit Stops:</label>
+        <input type="number" id="pit_stops" name="pit_stops" min="0" required>
+
+        <label for="winning_team">Équipe Gagnante:</label>
+        <select id="winning_team" name="winning_team" required>
+            {% for team in teams %}
+            <option value="{{ team }}">{{ team }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="weather">Conditions Météorologiques:</label>
+        <select id="weather" name="weather" required>
+            <option value="Sunny">Ensoleillé</option>
+            <option value="Rainy">Pluvieux</option>
+            <option value="Cloudy">Nuageux</option>
+            <option value="Dry">Sec</option>
+        </select>
+
+        <label for="final_rankings">Classement Final:</label>
+        <textarea id="final_rankings" name="final_rankings" rows="4" required></textarea>
+
+        <button type="submit">Faire une Prédiction</button>
+    </form>
+
+    {% if prediction %}
+        <h1>Prédiction F1</h1>
+        <h2>Votre Prédiction :</h2>
+        <p>Pilote 1: {{ prediction.driver1 }}</p>
+        <p>Pilote 2: {{ prediction.driver2 }}</p>
+        <p>Circuit: {{ prediction.circuit }}</p>
+        <p>Pilote Gagnant: {{ prediction.winner }}</p>
+        <p>Pole Position: {{ prediction.pole_position }}</p>
+        <p>Meilleur Tour en Course: {{ prediction.best_lap }}</p>
+        <p>Nombre de Tours en Tête: {{ prediction.laps_led }}</p>
+        <p>Nombre de Pit Stops: {{ prediction.pit_stops }}</p>
+        <p>Équipe Gagnante: {{ prediction.winning_team }}</p>
+        <p>Conditions Météorologiques: {{ prediction.weather }}</p>
+        <p>Classement Final: {{ prediction.final_rankings }}</p>
+    {% endif %}
+<div class="back-link">
+        <a href="{{ url_for('home') }}">Retour</a>
+    </div>
+</body>
+</html>

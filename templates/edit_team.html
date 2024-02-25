@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier une écurie de F1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: pink; /* Fond rose */
+            display: flex; /* Affichage flex pour centrer le contenu */
+            justify-content: center; /* Centrer horizontalement */
+            align-items: center; /* Centrer verticalement */
+            height: 100vh; /* Pleine hauteur de la fenêtre */
+            margin: 0; /* Supprimer les marges par défaut */
+            padding: 0; /* Supprimer le remplissage par défaut */
+        }
+        form {
+            width: 400px; /* Largeur du formulaire */
+            background-color: white; /* Fond blanc */
+            padding: 20px; /* Espacement intérieur */
+            border-radius: 10px; /* Coins arrondis */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre légère */
+        }
+        h1 {
+            text-align: center; /* Centrer le titre */
+            color: #333; /* Couleur du texte */
+        }
+        label {
+            display: block; /* Affichage bloc pour aligner les labels et les champs de saisie verticalement */
+            margin-bottom: 10px; /* Marge en bas */
+        }
+        input[type="text"] {
+            width: 95%; /* Largeur à 100% */
+            padding: 10px; /* Espacement intérieur */
+            margin-bottom: 20px; /* Marge en bas */
+            border: 1px solid #ccc; /* Bordure grise */
+            border-radius: 5px; /* Coins arrondis */
+        }
+        button[type="submit"] {
+            width: 100%; /* Largeur à 100% */
+            padding: 10px 20px; /* Espacement intérieur */
+            background-color: #333; /* Fond gris foncé */
+            color: white; /* Texte en blanc */
+            border: none; /* Pas de bordure */
+            border-radius: 5px; /* Coins arrondis */
+            cursor: pointer; /* Curseur de la souris en pointer */
+        }
+        button[type="submit"]:hover {
+            background-color: #555; /* Changement de couleur au survol */
+        }
+    </style>
+</head>
+<body>
+    <form action="{{ url_for('edit_team', team_id=team.id) }}" method="post">
+        <h1>Modifier une écurie de F1</h1>
+        <label for="team_name">Nom de l'écurie:</label>
+        <input type="text" id="team_name" name="team_name" value="{{ team.team_name }}" required>
+
+        <label for="driver1">Pilote 1:</label>
+        <input type="text" id="driver1" name="driver1" value="{{ team.driver1 }}" required>
+
+        <label for="driver2">Pilote 2:</label>
+        <input type="text" id="driver2" name="driver2" value="{{ team.driver2 }}" required>
+
+        <label for="circuit">Circuit:</label>
+        <input type="text" id="circuit" name="circuit" value="{{ team.circuit }}" required>
+
+        <button type="submit">Modifier</button>
+    </form>
+</body>
+</html>

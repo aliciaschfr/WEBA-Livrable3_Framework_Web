@@ -1,0 +1,29 @@
+<!-- derniers_resultats.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derniers Résultats</title>
+</head>
+<body>
+    <h1>Derniers Résultats de Formule 1</h1>
+    <ul>
+        {% for resultat in resultats %}
+            <li>
+                <strong>{{ resultat['location'] }}</strong> - {{ resultat['date'].strftime('%Y-%m-%d %H:%M:%S') }}
+                <ul>
+                    {% if 'race_positions' in resultat %}
+                        <li>Position 1: {{ resultat['race_positions'][0]['driver_name'] }} ({{ resultat['race_positions'][0]['position'] }})</li>
+                        <li>Position 2: {{ resultat['race_positions'][1]['driver_name'] }} ({{ resultat['race_positions'][1]['position'] }})</li>
+                        <li>Position 3: {{ resultat['race_positions'][2]['driver_name'] }} ({{ resultat['race_positions'][2]['position'] }})</li>
+                    {% else %}
+                        <li>Aucun résultat disponible pour cette course</li>
+                    {% endif %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
