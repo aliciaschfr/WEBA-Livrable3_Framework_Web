@@ -1,10 +1,10 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+
 
 db = SQLAlchemy()
 app = Flask(__name__)
-migrate = Migrate(app, db)
+
 
 class F1Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -13,6 +13,7 @@ class F1Team(db.Model):
     driver2 = db.Column(db.String(100), nullable=False)
     circuit = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

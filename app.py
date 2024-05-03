@@ -1,10 +1,12 @@
 #app.py
 from models import Model, User
+from flask import jsonify
 from datetime import datetime
-from flask import Flask, render_template, session, flash, redirect, url_for, request, jsonify
+from flask import Flask, render_template, session, redirect, url_for, request, jsonify
 import requests
 from models import F1Team, db
 from operator import itemgetter
+
 
 app = Flask(__name__)
 app.secret_key = 'secret_key'
@@ -13,14 +15,41 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 db.init_app(app)
+app.app_context().push()
 with app.app_context():
     db.create_all()
+    # db.drop_all()
 
 
 @app.route('/')
 def home():
     logged_in = 'username' in session
     return render_template('index.html', logged_in=logged_in)
+
+
+def get_last_race_results():
+    try:
+        response = requests.get('https://ergast.com/api/f1/2024/results')
+        response.raise_for_status()  # Lève une exception pour les codes d'état HTTP >= 400
+        data = response.json()  # Tentative de décodage de la réponse JSON
+        return data
+    except requests.exceptions.RequestException as e:
+        print("Failed to retrieve last race results:", e)
+        return None
+    except ValueError as e:
+        print("Failed to parse JSON:", e)
+        return None
+
+@app.route('/dernier_resultat')
+def dernier_resultat():
+    last_race_results = get_last_race_results()
+    if last_race_results:
+        # Traitement des résultats de la course
+        # Vous pouvez passer ces résultats à votre modèle de rendu
+        return render_template('dernier_resultat.html', last_race_results=last_race_results)
+    else:
+        # Gérer le cas où les résultats de la course ne peuvent pas être récupérés
+        return jsonify({'error': 'Failed to retrieve last race results'}), 500
 
 
 @app.route('/drivers')
@@ -76,11 +105,20 @@ def create_team():
         driver2 = request.form['driver2']
         circuit = request.form['circuit']
 
-        new_team = F1Team(team_name=team_name, driver1=driver1, driver2=driver2, circuit=circuit)
-        db.session.add(new_team)
-        db.session.commit()
+        # Récupérer l'utilisateur à partir de la session
+        user = User.query.filter_by(username=session['username']).first()
 
-        return redirect(url_for('liste_ecurie'))
+        # Vérifier si l'utilisateur existe
+        if user:
+            # Créer une nouvelle équipe associée à l'utilisateur actuel
+            new_team = F1Team(team_name=team_name, driver1=driver1, driver2=driver2, circuit=circuit, user_id=user.id)
+            db.session.add(new_team)
+            db.session.commit()
+
+            return redirect(url_for('liste_ecurie'))
+        else:
+            # Gérer le cas où l'utilisateur n'existe pas
+            return "Utilisateur non trouvé", 404
     else:
         names = Model.get_available_teams()
         drivers = Model.get_available_drivers()
@@ -179,55 +217,6 @@ def circuits():
         return render_template('circuits.html', circuits=circuits_info)
     else:
         return 'Failed to retrieve circuit data', 500
-
-
-@app.route('/derniers_resultats')
-def derniers_resultats():
-    response_drivers = requests.get('https://api.openf1.org/v1/drivers')
-    response_sessions = requests.get('https://api.openf1.org/v1/sessions')
-    response_positions = requests.get('https://api.openf1.org/v1/position')
-
-    if all(response.status_code == 200 for response in [response_drivers, response_sessions, response_positions]):
-        drivers_data = response_drivers.json()
-        sessions_data = response_sessions.json()
-        positions_data = response_positions.json()
-
-        resultats = {}
-
-        for position in positions_data:
-            session_key = position['session_key']
-            session = next(
-                (s for s in sessions_data if s['session_key'] == session_key and s['session_type'] == 'Race'), None)
-            if session:
-                position_date = datetime.fromisoformat(position['date'])
-                date_key = position_date.strftime('%Y-%m-%d')
-
-                if date_key not in resultats:
-                    resultats[date_key] = {'races': []}
-
-                if position['position'] in [1, 2, 3]:
-                    driver_number = position['driver_number']
-                    driver = next((d for d in drivers_data if d['driver_number'] == driver_number), None)
-                    if driver:
-                        resultats[date_key]['races'].append({
-                            'date': position_date,
-                            'location': session['location'],
-                            'driver_name': driver['full_name'],
-                            'position': position['position']
-                        })
-
-        for date_data in resultats.values():
-            races = date_data.get('races', [])
-            if races:
-                latest_race = max(races, key=itemgetter('date'))
-                date_data['races'] = [latest_race]
-
-        final_resultats = [race for date_data in resultats.values() for race in date_data['races']]
-
-        return render_template('derniers_resultats.html', resultats=final_resultats)
-    else:
-        return 'Failed to retrieve race results', 500
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
